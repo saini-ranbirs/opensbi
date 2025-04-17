@@ -10,6 +10,42 @@
 
 #include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
 
+struct mpxy_rpmi_mm {
+	u32 mm_version;
+	u32 shmem_addr_lo;
+	u32 shmem_addr_hi;
+	u32 shmem_size;
+};
+
+static int mpxy_rpmi_mm_xfer(void *context, struct mbox_chan *chan,
+			     struct mbox_xfer *xfer)
+{
+	struct rpmi_message_args *args = xfer->args;
+	struct mpxy_rpmi_mm *smg = context;
+	int rc = 0;
+
+	if (!xfer->rx || (args->type != RPMI_MSG_NORMAL_REQUEST))
+		return 0;
+
+	switch (args->service_id) {
+	case RPMI_MM_SRV_GET_ATTRIBUTES:
+		((u32 *)xfer->rx)[0] = cpu_to_le32(RPMI_SUCCESS);
+		((u32 *)xfer->rx)[1] = cpu_to_le32(smg->mm_version);
+		((u32 *)xfer->rx)[2] = cpu_to_le32(smg->shmem_addr_lo);
+		((u32 *)xfer->rx)[3] = cpu_to_le32(smg->shmem_addr_hi);
+		((u32 *)xfer->rx)[4] = cpu_to_le32(smg->shmem_size);
+		args->rx_data_len = 5 * sizeof(u32);
+		break;
+
+	default:
+		((u32 *)xfer->rx)[0] = cpu_to_le32(RPMI_ERR_NOTSUPP);
+		args->rx_data_len = sizeof(u32);
+		break;
+	};
+
+	return rc;
+}
+
 static struct mpxy_rpmi_service_data mm_services[] = {
 	[0] {
 	     .id = RPMI_MM_SRV_GET_ATTRIBUTES,
@@ -36,6 +72,7 @@ static const struct mpxy_rpmi_mbox_data mm_data = {
 	.servicegrp_id = RPMI_SRVGRP_MM,
 	.num_services = array_size(mm_services),
 	.service_data = mm_services,
+	.xfer_group = mpxy_rpmi_mm_xfer,
 };
 
 /* one extra blank entry for loop termination while matching */
