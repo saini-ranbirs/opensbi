@@ -217,7 +217,7 @@ enum rpmi_servicegroup_id {
 	RPMI_SRVGRP_HSM = 0x0005,
 	RPMI_SRVGRP_CPPC = 0x0006,
 	RPMI_SRVGRP_CLOCK = 0x0008,
-	RPMI_SRVGRP_MM = 0x0009,
+	RPMI_SRVGRP_MM = 0x000B,
 	RPMI_SRVGRP_ID_MAX_COUNT,
 
 	/* Reserved range for service groups */
