@@ -17,6 +17,7 @@ struct mpxy_rpmi_mm {
 	u32 shmem_size;
 };
 
+#if 0
 static int mpxy_rpmi_mm_xfer(void *context, struct mbox_chan *chan,
 			     struct mbox_xfer *xfer)
 {
@@ -45,6 +46,7 @@ static int mpxy_rpmi_mm_xfer(void *context, struct mbox_chan *chan,
 
 	return rc;
 }
+#endif
 
 static struct mpxy_rpmi_service_data mm_services[] = {
 	[0] {
@@ -70,9 +72,8 @@ static struct mpxy_rpmi_service_data mm_services[] = {
  */
 static const struct mpxy_rpmi_mbox_data mm_data = {
 	.servicegrp_id = RPMI_SRVGRP_MM,
-	.num_services = array_size(mm_services),
+	.num_services = RPMI_MM_SRV_MAX_COUNT,
 	.service_data = mm_services,
-	.xfer_group = mpxy_rpmi_mm_xfer,
 };
 
 /* one extra blank entry for loop termination while matching */
