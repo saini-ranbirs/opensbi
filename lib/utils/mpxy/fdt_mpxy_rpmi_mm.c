@@ -9,7 +9,9 @@
  */
 
 #include <sbi_utils/mpxy/fdt_mpxy_rpmi_mbox.h>
+#include <sbi/sbi_console.h>
 
+#if 0
 struct mpxy_rpmi_mm {
 	u32 mm_version;
 	u32 shmem_addr_lo;
@@ -17,7 +19,6 @@ struct mpxy_rpmi_mm {
 	u32 shmem_size;
 };
 
-#if 0
 static int mpxy_rpmi_mm_xfer(void *context, struct mbox_chan *chan,
 			     struct mbox_xfer *xfer)
 {
@@ -37,6 +38,9 @@ static int mpxy_rpmi_mm_xfer(void *context, struct mbox_chan *chan,
 		((u32 *)xfer->rx)[4] = cpu_to_le32(smg->shmem_size);
 		args->rx_data_len = 5 * sizeof(u32);
 		break;
+
+	case RPMI_MM_SRV_COMMUNICATE:
+		sbi_printf("%s: case RPMI_MM_SRV_COMMUNICATE \n", __func__);
 
 	default:
 		((u32 *)xfer->rx)[0] = cpu_to_le32(RPMI_ERR_NOTSUPP);
@@ -65,15 +69,11 @@ static struct mpxy_rpmi_service_data mm_services[] = {
 	      },
 };
 
-/*
- * Not using RPMI_MM_SRV_MAX_COUNT for .num_services field as Ventana is not
- * adding support for RPMI_MM_SRV_ENABLE_NOTIFICATION and hence the entry for
- * the same is not included in the mm_services[] look up table above.
- */
 static const struct mpxy_rpmi_mbox_data mm_data = {
 	.servicegrp_id = RPMI_SRVGRP_MM,
 	.num_services = RPMI_MM_SRV_MAX_COUNT,
 	.service_data = mm_services,
+	//.xfer_group = mpxy_rpmi_mm_xfer,
 };
 
 /* one extra blank entry for loop termination while matching */
