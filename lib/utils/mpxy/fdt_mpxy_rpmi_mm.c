@@ -41,7 +41,7 @@ static int mpxy_rpmi_mm_xfer(void *context, struct mbox_chan *chan,
 		break;
 
 	case RPMI_MM_SRV_COMMUNICATE:
-		sbi_printf("%s: case RPMI_MM_SRV_COMMUNICATE \n", __func__);
+		sbi_printf("OpenSBI %s: case RPMI_MM_SRV_COMMUNICATE \n", __func__);
 		rc = mbox_chan_xfer(chan, xfer);
 		break;
 
@@ -77,11 +77,13 @@ static int mpxy_rpmi_mm_setup(void **context, struct mbox_chan *chan,
 	struct rpmi_mm_get_attributes_rsp resp;
 	unsigned long mm_region_addr = 0;
 	unsigned long mm_region_size = 0;
+	unsigned long mm_region_flags;
 	struct mpxy_rpmi_mm *mmg;
 	int rc = 0;
 
 	rc = rpmi_normal_request_with_status(chan, RPMI_MM_SRV_GET_ATTRIBUTES,
-					     NULL, 0, 0, &resp, rpmi_u32_count(resp),
+					     NULL, 0, 0, &resp,
+					     rpmi_u32_count(resp),
 					     rpmi_u32_count(resp));
 	if (rc)
 		return rc;
@@ -98,11 +100,13 @@ static int mpxy_rpmi_mm_setup(void **context, struct mbox_chan *chan,
 #if __riscv_xlen == 32
 	mm_region_addr = resp.shmem_addr_lo;
 #else
-	mm_region_addr = (ulong)resp.shmem_addr_hi << 32 |  resp.shmem_addr_lo;
+	mm_region_addr =
+	    ((unsigned long)(resp.shmem_addr_hi) << 32) | resp.shmem_addr_lo;
 #endif
 
 	mm_region_size = resp.shmem_size;
 	mm_region_flags = SBI_DOMAIN_MEMREGION_SHARED_SURW_MRW;
+
 	rc = sbi_domain_root_add_memrange(mm_region_addr, mm_region_size,
 					  PAGE_SIZE, mm_region_flags);
 	if (rc)
